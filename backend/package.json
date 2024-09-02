@@ -1,0 +1,11 @@
+{
+  "name": "backend",
+  "version": "1.0.0",
+  "scripts": {
+    "postinstall": "pdm install",
+    "dev": "pdm run fastapi dev src/main.py"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT"
+}

@@ -1,0 +1,13 @@
+[project]
+name = "backend"
+version = "0.1.0"
+description = "Default template for PDM package"
+authors = [{ name = "Wei Ji (FlySkyPie)", email = "c445dj544@gmail.com" }]
+dependencies = ["fastapi[standard]>=0.112.2"]
+requires-python = "==3.12.*"
+readme = "README.md"
+license = { text = "MIT" }
+
+
+[tool.pdm]
+distribution = false
