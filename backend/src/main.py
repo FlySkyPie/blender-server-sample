@@ -1,15 +1,33 @@
 from typing import Union
 
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
 
+origins = [
+    "http://localhost",
+    "http://localhost:5173",
+]
 
-@app.get("/")
-def read_root():
-    return {"Hello": "World"}
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+count: int = 0
+
+@app.patch("/count")
+def update_count():
+    global count
+    count += 1
+    return {"count": count}
 
 
-@app.get("/items/{item_id}")
-def read_item(item_id: int, q: Union[str, None] = None):
-    return {"item_id": item_id, "q": q}
+@app.get("/count")
+def get_count():
+    global count
+    return {"count": count}

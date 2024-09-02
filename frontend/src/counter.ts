@@ -1,9 +1,29 @@
 export function setupCounter(element: HTMLButtonElement) {
-  let counter = 0
-  const setCounter = (count: number) => {
-    counter = count
-    element.innerHTML = `count is ${counter}`
+  const initCounter = async () => {
+
+    const result = await fetch("http://localhost:8000/count", {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    }).then(responses => responses.json());
+
+    element.innerHTML = `count is ${result.count}`;
   }
-  element.addEventListener('click', () => setCounter(counter + 1))
-  setCounter(0)
+
+  const updateCounter = async () => {
+
+    const result = await fetch("http://localhost:8000/count", {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    }).then(responses => responses.json());
+
+    element.innerHTML = `count is ${result.count}`;
+  }
+
+  element.addEventListener('click', () => updateCounter());
+
+  initCounter();
 }
