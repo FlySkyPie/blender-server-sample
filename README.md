@@ -1,5 +1,7 @@
 # Node.js + Python Monorepo
 
+![](./docs/00_hero.webp)
+
 ## Prerequired
 
 - [pdm](https://github.com/pdm-project/pdm)
