@@ -1,5 +1,6 @@
+import tempfile
 from typing import Union
-
+from multiprocessing import current_process
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -18,16 +19,18 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-count: int = 0
 
-@app.patch("/count")
-def update_count():
-    global count
-    count += 1
-    return {"count": count}
+@app.get("/model")
+def get_mdoel():
+    # Used to fix `ModuleNotFoundError: No module named '_bpy'` issue.
+    import bpy
+    with tempfile.NamedTemporaryFile() as tmp:
 
+        print(f'{tmp.name}.glb')
+        bpy.ops.export_scene.gltf(
+            filepath=f'{tmp.name}.glb',
+            export_format='GLB',
+            use_active_collection=True
+        )
 
-@app.get("/count")
-def get_count():
-    global count
-    return {"count": count}
+    return {"count": 0}
