@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "scripts": {
     "postinstall": "pdm install",
-    "dev": "pdm run fastapi dev src/main.py"
+    "dev": "pdm run fastapi dev src/main.py",
+    "start": "pdm run fastapi run src/main.py"
   },
   "keywords": [],
   "author": "",
