@@ -1,3 +1,4 @@
+import os
 import tempfile
 import datetime
 from typing import Union
@@ -5,6 +6,7 @@ from multiprocessing import current_process
 from fastapi import FastAPI, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
+from starlette.background import BackgroundTasks
 
 app = FastAPI()
 
@@ -22,6 +24,10 @@ app.add_middleware(
 )
 
 
+def remove_file(path: str) -> None:
+    os.unlink(path)
+
+
 @app.get(
     "/model",
     response_class=FileResponse,
@@ -31,13 +37,13 @@ app.add_middleware(
             "description": "Return a glb (glTF binary) file.",
         }
     },)
-def get_mdoel(response: Response):
+def get_mdoel(response: Response, background_tasks: BackgroundTasks):
     # Used to fix `ModuleNotFoundError: No module named '_bpy'` issue.
     import bpy
 
-    tmp = tempfile.NamedTemporaryFile()
-    tmpFilePath = f'{tmp.name}.glb'
-    downloadFilename = f'{datetime.datetime.now().replace(microsecond=0).isoformat()}.glb'
+    tmp = tempfile.NamedTemporaryFile(suffix='.glb')
+    tmpFilePath: str = tmp.name
+    downloadFilename: str = f'{datetime.datetime.now().replace(microsecond=0).isoformat()}.glb'
 
     bpy.ops.export_scene.gltf(
         filepath=tmpFilePath,
@@ -47,4 +53,5 @@ def get_mdoel(response: Response):
 
     response.headers["Content-Disposition"] = f'attachment; filename="{downloadFilename}"'
 
+    background_tasks.add_task(remove_file, tmpFilePath)
     return tmpFilePath
