@@ -7,7 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from starlette.background import BackgroundTasks
 
-from routers import text, test
+from routers import text, test, svg
 
 app = FastAPI()
 
@@ -26,3 +26,4 @@ app.add_middleware(
 
 app.include_router(router=text.router, prefix="/api/v1")
 app.include_router(router=test.router, prefix="/api/v1")
+app.include_router(router=svg.router, prefix="/api/v1")
