@@ -14,37 +14,17 @@ def remove_file(path: str) -> None:
 
 
 @router.get(
-    "/text",
+    "/test",
     response_class=FileResponse,
     responses={
         200: {
             "content": {"model/gltf-binary": {}},
-            "description": "Return a 3D text glb (glTF binary) file.",
+            "description": "Return a glb (glTF binary) file with Blender's default cube.",
         }
     },)
-def get_mdoel(
-        response: Response,
-        background_tasks: BackgroundTasks,
-        text: str = "Untitled",):
+def get_mdoel(response: Response, background_tasks: BackgroundTasks):
     # Used to fix `ModuleNotFoundError: No module named '_bpy'` issue.
     import bpy
-
-    # Clean default cube
-    bpy.ops.object.select_all(action="SELECT")
-    bpy.ops.object.delete(use_global=False, confirm=False)
-
-    # Add text
-    bpy.ops.object.text_add(enter_editmode=False,
-                            align='WORLD',
-                            location=(0, 0, 0),
-                            rotation=(3.14*0.5, 0, 0),
-                            scale=(1, 1, 1))
-
-    text_object = bpy.context.scene.objects['Text']
-    text_object.data.body = text
-
-    text_object.data.extrude = 0.05
-    text_object.data.bevel_depth = 0.01
 
     tmp = tempfile.NamedTemporaryFile(suffix='.glb')
     tmpFilePath: str = tmp.name
