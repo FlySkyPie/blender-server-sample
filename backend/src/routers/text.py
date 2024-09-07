@@ -22,7 +22,10 @@ def remove_file(path: str) -> None:
             "description": "Return a glb (glTF binary) file.",
         }
     },)
-def get_mdoel(response: Response, background_tasks: BackgroundTasks):
+def get_mdoel(
+        response: Response,
+        background_tasks: BackgroundTasks,
+        text: str = "Untitle",):
     # Used to fix `ModuleNotFoundError: No module named '_bpy'` issue.
     import bpy
 
@@ -32,7 +35,13 @@ def get_mdoel(response: Response, background_tasks: BackgroundTasks):
 
     # Add text
     bpy.ops.object.text_add(enter_editmode=False,
-                            align='WORLD', location=(0, 0, 0), scale=(1, 1, 1))
+                            align='WORLD',
+                            location=(0, 0, 0),
+                            rotation=(3.14*0.5, 0, 0),
+                            scale=(1, 1, 1))
+
+    text_object = bpy.context.scene.objects['Text']
+    text_object.data.body = text
 
     tmp = tempfile.NamedTemporaryFile(suffix='.glb')
     tmpFilePath: str = tmp.name
