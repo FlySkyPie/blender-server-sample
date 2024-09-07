@@ -2,37 +2,19 @@ import os
 import tempfile
 import datetime
 from typing import Union
-from fastapi import FastAPI, Response
-from fastapi.middleware.cors import CORSMiddleware
+from fastapi import FastAPI, Response, APIRouter
 from fastapi.responses import FileResponse
 from starlette.background import BackgroundTasks
 
-from routers import text
-
-app = FastAPI()
-
-origins = [
-    "http://localhost",
-    "http://localhost:5173",
-]
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=origins,
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
-app.include_router(text.router)
+router = APIRouter()
 
 
 def remove_file(path: str) -> None:
     os.unlink(path)
 
 
-@app.get(
-    "/model",
+@router.get(
+    "/text",
     response_class=FileResponse,
     responses={
         200: {
@@ -43,6 +25,14 @@ def remove_file(path: str) -> None:
 def get_mdoel(response: Response, background_tasks: BackgroundTasks):
     # Used to fix `ModuleNotFoundError: No module named '_bpy'` issue.
     import bpy
+
+    # Clean default cube
+    bpy.ops.object.select_all(action="SELECT")
+    bpy.ops.object.delete(use_global=False, confirm=False)
+
+    # Add text
+    bpy.ops.object.text_add(enter_editmode=False,
+                            align='WORLD', location=(0, 0, 0), scale=(1, 1, 1))
 
     tmp = tempfile.NamedTemporaryFile(suffix='.glb')
     tmpFilePath: str = tmp.name
