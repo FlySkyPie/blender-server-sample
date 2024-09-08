@@ -49,6 +49,10 @@ async def get_mdoel(
     # Impot the uploaded image
     bpy.ops.import_curve.svg(filepath=uploadTmpPath)
 
+    for item in bpy.data.objects:
+        item.data.extrude = 0.001
+        item.rotation_euler = (3.14*0.5, 0, 0)
+
     # Debug, dump as blend file
     # debugTmp = tempfile.NamedTemporaryFile(suffix=".blend")
     # debugTmpPath: str = debugTmp.name
