@@ -24,11 +24,11 @@ def remove_file(paths: list[str]) -> None:
             "content": {"model/gltf-binary": {}},
             "description": "Return a glb (glTF binary) file.",
         }
-    },)
+    },
+)
 async def get_mdoel(
-        response: Response,
-        background_tasks: BackgroundTasks,
-        uploadFile: UploadFile):
+    response: Response, background_tasks: BackgroundTasks, uploadFile: UploadFile
+):
     if uploadFile.content_type != "image/svg+xml":
         raise HTTPException(400, detail="Invalid file type")
 
@@ -40,18 +40,19 @@ async def get_mdoel(
     bpy.ops.object.delete(use_global=False, confirm=False)
 
     # Save uploaded image
-    uploadTmp = tempfile.NamedTemporaryFile(suffix="_"+uploadFile.filename)
-    uploadTmpPath: str = uploadTmp.name
-    async with aiofiles.open(uploadTmpPath, 'wb') as out_file:
-        content = uploadFile.file.read()  # async read
-        await out_file.write(content)  # async write
+    with tempfile.NamedTemporaryFile(suffix="_" + uploadFile.filename) as uploadTmp:
+        # uploadTmp = tempfile.NamedTemporaryFile(suffix="_" + uploadFile.filename)
+        uploadTmpPath: str = uploadTmp.name
+        async with aiofiles.open(uploadTmpPath, "wb") as out_file:
+            content = uploadFile.file.read()  # async read
+            await out_file.write(content)  # async write
 
-    # Impot the uploaded image
-    bpy.ops.import_curve.svg(filepath=uploadTmpPath)
+        # Impot the uploaded image
+        bpy.ops.import_curve.svg(filepath=uploadTmpPath)
 
     for item in bpy.data.objects:
         item.data.extrude = 0.001
-        item.rotation_euler = (3.14*0.5, 0, 0)
+        item.rotation_euler = (3.14 * 0.5, 0, 0)
 
     # Debug, dump as blend file
     # debugTmp = tempfile.NamedTemporaryFile(suffix=".blend")
@@ -59,16 +60,19 @@ async def get_mdoel(
     # bpy.ops.wm.save_as_mainfile(filepath=debugTmpPath)
     # print(debugTmpPath)
 
-    tmp = tempfile.NamedTemporaryFile(suffix='.glb')
-    tmpFilePath: str = tmp.name
-    downloadFilename: str = f'{datetime.datetime.now().replace(microsecond=0).isoformat()}.glb'
+    tmpFilePath: str = tempfile.mktemp(suffix=".glb")
+    downloadFilename: str = (
+        f"{datetime.datetime.now().replace(microsecond=0).isoformat()}.glb"
+    )
 
     bpy.ops.export_scene.gltf(
         filepath=tmpFilePath,
-        export_format='GLB',
+        export_format="GLB",
     )
 
-    response.headers["Content-Disposition"] = f'attachment; filename="{downloadFilename}"'
+    response.headers["Content-Disposition"] = (
+        f'attachment; filename="{downloadFilename}"'
+    )
 
-    background_tasks.add_task(remove_file, [uploadTmpPath, tmpFilePath])
+    background_tasks.add_task(remove_file, [tmpFilePath])
     return tmpFilePath

@@ -21,22 +21,24 @@ def remove_file(path: str) -> None:
             "content": {"model/gltf-binary": {}},
             "description": "Return a glb (glTF binary) file with Blender's default cube.",
         }
-    },)
+    },
+)
 def get_mdoel(response: Response, background_tasks: BackgroundTasks):
     # Used to fix `ModuleNotFoundError: No module named '_bpy'` issue.
     import bpy
 
-    tmp = tempfile.NamedTemporaryFile(suffix='.glb')
-    tmpFilePath: str = tmp.name
-    downloadFilename: str = f'{datetime.datetime.now().replace(microsecond=0).isoformat()}.glb'
-
-    bpy.ops.export_scene.gltf(
-        filepath=tmpFilePath,
-        export_format='GLB',
-        use_active_collection=True
+    tmpFilePath: str = tempfile.mktemp(suffix=".glb")
+    downloadFilename: str = (
+        f"{datetime.datetime.now().replace(microsecond=0).isoformat()}.glb"
     )
 
-    response.headers["Content-Disposition"] = f'attachment; filename="{downloadFilename}"'
+    bpy.ops.export_scene.gltf(
+        filepath=tmpFilePath, export_format="GLB", use_active_collection=True
+    )
+
+    response.headers["Content-Disposition"] = (
+        f'attachment; filename="{downloadFilename}"'
+    )
 
     background_tasks.add_task(remove_file, tmpFilePath)
     return tmpFilePath
