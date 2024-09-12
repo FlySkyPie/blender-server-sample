@@ -2,7 +2,6 @@ import os
 import tempfile
 import datetime
 import asyncio
-import threading
 import concurrent.futures
 from typing import Union
 from fastapi import FastAPI, Response, APIRouter, UploadFile, HTTPException

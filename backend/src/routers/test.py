@@ -1,17 +1,32 @@
-import os
 import tempfile
 import datetime
-import threading
-from typing import Union
-from fastapi import FastAPI, Response, APIRouter
+import asyncio
+import concurrent.futures
+from fastapi import Response, APIRouter
 from fastapi.responses import FileResponse
 from starlette.background import BackgroundTasks
+
+from utilities import remove_files
 
 router = APIRouter()
 
 
-def remove_file(path: str) -> None:
-    os.unlink(path)
+def process_blender() -> str:
+    # Used to fix `ModuleNotFoundError: No module named '_bpy'` issue.
+    import bpy
+
+    # report the process
+    # print(f"Main pid: {os.getpid()}")
+    # print(threading.get_ident())
+
+    tmpFilePath: str = tempfile.mktemp(suffix=".glb")
+
+    print(bpy.context.active_object)
+    bpy.ops.export_scene.gltf(
+        filepath=tmpFilePath, export_format="GLB", use_active_collection=True
+    )
+
+    return tmpFilePath
 
 
 @router.get(
@@ -24,27 +39,17 @@ def remove_file(path: str) -> None:
         }
     },
 )
-def get_mdoel(response: Response, background_tasks: BackgroundTasks):
-    # Used to fix `ModuleNotFoundError: No module named '_bpy'` issue.
-    import bpy
+async def get_mdoel(response: Response, background_tasks: BackgroundTasks):
+    loop = asyncio.get_event_loop()
+    with concurrent.futures.ProcessPoolExecutor() as pool:
+        tmpFilePath = await loop.run_in_executor(pool, process_blender)
 
-    # report the process
-    print(f'Main pid: {os.getpid()}')
-    print(threading.get_ident())
+        downloadFilename: str = (
+            f"{datetime.datetime.now().replace(microsecond=0).isoformat()}.glb"
+        )
+        response.headers["Content-Disposition"] = (
+            f'attachment; filename="{downloadFilename}"'
+        )
 
-    tmpFilePath: str = tempfile.mktemp(suffix=".glb")
-    downloadFilename: str = (
-        f"{datetime.datetime.now().replace(microsecond=0).isoformat()}.glb"
-    )
-
-    print(bpy.context.active_object)
-    bpy.ops.export_scene.gltf(
-        filepath=tmpFilePath, export_format="GLB", use_active_collection=True
-    )
-
-    response.headers["Content-Disposition"] = (
-        f'attachment; filename="{downloadFilename}"'
-    )
-
-    background_tasks.add_task(remove_file, tmpFilePath)
-    return tmpFilePath
+        background_tasks.add_task(remove_files, [tmpFilePath])
+        return tmpFilePath
