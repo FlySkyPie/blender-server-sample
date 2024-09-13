@@ -2,7 +2,10 @@ import tempfile
 import datetime
 import asyncio
 import concurrent.futures
-from fastapi import Response, APIRouter
+import math
+from scipy.spatial.transform import Rotation as R
+
+from fastapi import Response, APIRouter, Query
 from fastapi.responses import FileResponse
 from starlette.background import BackgroundTasks
 
@@ -11,7 +14,7 @@ from utilities import remove_files
 router = APIRouter()
 
 
-def process_blender() -> str:
+def process_blender(polar_angle: float, azimuth_angle: float) -> str:
     # Used to fix `ModuleNotFoundError: No module named '_bpy'` issue.
     import bpy
 
@@ -20,7 +23,25 @@ def process_blender() -> str:
     # print(threading.get_ident())
 
     bpy.ops.wm.open_mainfile(filepath="assets/blenders/24-v-power-supply.blend")
+    camera = bpy.context.scene.camera
 
+    rotation = R.from_euler("xzy", [-polar_angle, azimuth_angle, 0], degrees=True)
+    [x, y, z] = rotation.apply([0, -1, 0])
+    camera.location.x = x
+    camera.location.y = y
+    camera.location.z = z
+
+    camera_rotation = R.from_euler(
+        "XZY",
+        [
+            90 - polar_angle,
+            0,
+            azimuth_angle,
+        ],
+        degrees=True,
+    )
+    camera.rotation_mode = "XZY"
+    camera.rotation_euler = camera_rotation.as_euler("XZY", degrees=False)
 
     tmpFilePath: str = tempfile.mktemp(suffix=".png")
 
@@ -45,10 +66,17 @@ def process_blender() -> str:
         }
     },
 )
-async def render_from_file(response: Response, background_tasks: BackgroundTasks):
+async def render_from_file(
+    response: Response,
+    background_tasks: BackgroundTasks,
+    polar_angle: float = Query(default=0, ge=-90, le=90),
+    azimuth_angle: float = 0,
+):
     loop = asyncio.get_event_loop()
     with concurrent.futures.ProcessPoolExecutor() as pool:
-        tmpFilePath = await loop.run_in_executor(pool, process_blender)
+        tmpFilePath = await loop.run_in_executor(
+            pool, process_blender, polar_angle, azimuth_angle
+        )
 
         # downloadFilename: str = (
         #     f"{datetime.datetime.now().replace(microsecond=0).isoformat()}.glb"
