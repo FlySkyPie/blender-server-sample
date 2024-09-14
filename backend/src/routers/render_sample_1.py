@@ -65,6 +65,7 @@ def process_blender(polar_angle: float, azimuth_angle: float) -> str:
             "description": "Return a image of power supply rendered by Blender",
         }
     },
+    tags=["Render"],
 )
 async def render_from_file(
     response: Response,

@@ -9,7 +9,10 @@ from starlette.background import BackgroundTasks
 
 from routers import text, test, svg, render, render_sample_1
 
-app = FastAPI()
+app = FastAPI(
+    title="Blender HTTP Server",
+    summary="Demo of integration bpy (Blender as Python Module) with FastAPI.",
+)
 
 origins = [
     "http://localhost",

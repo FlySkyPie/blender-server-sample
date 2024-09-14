@@ -38,6 +38,7 @@ def process_blender() -> str:
             "description": "Return a glb (glTF binary) file with Blender's default cube.",
         }
     },
+    tags=["Debug"],
 )
 async def get_mdoel(response: Response, background_tasks: BackgroundTasks):
     loop = asyncio.get_event_loop()

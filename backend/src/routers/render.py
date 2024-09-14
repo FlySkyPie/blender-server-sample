@@ -41,6 +41,7 @@ def process_blender() -> str:
             "description": "Return a image with Blender's default cube.",
         }
     },
+    tags=["Debug", "Render"],
 )
 async def render_default_cube(response: Response, background_tasks: BackgroundTasks):
     loop = asyncio.get_event_loop()
