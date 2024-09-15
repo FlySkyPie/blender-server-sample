@@ -1,0 +1,3 @@
+[submodule "backend/assets/addons/i2m-std"]
+	path = backend/assets/addons/i2m-std
+	url = https://github.com/kedepot/i2m-std.git
